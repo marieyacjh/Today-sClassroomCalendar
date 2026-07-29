@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Daily Classroom Calendar - Marie's Creative Classroom</title>
+<style>
+:root {
+  --bg-gradient: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+  --card-bg: rgba(255, 255, 255, 0.92);
+  --primary-color: #4a90e2;
+  --accent-color: #ff6b6b;
+  --text-color: #2c3e50;
+  --border-color: #333333;
+  --drop-bg: #eef2f5;
+  --game-scale: 1;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive, sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  transition: background 0.5s ease;
+}
+
+/* Background Animated Elements */
+.bg-decorations {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.floating-item {
+  position: absolute;
+  font-size: 2rem;
+  opacity: 0.6;
+  animation: floatAnim 10s infinite ease-in-out;
+}
+
+@keyframes floatAnim {
+  0% { transform: translateY(105vh) rotate(0deg); }
+  100% { transform: translateY(-10vh) rotate(360deg); }
+}
+
+/* Screen Wrapper */
+.screen {
+  display: none;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* Scaling Container */
+.app-container {
+  width: 100%;
+  max-width: 1000px;
+  transform: scale(var(--game-scale));
+  transform-origin: top center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 60px;
+}
+
+/* Top Utility Bar */
+.top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card-bg);
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: 3px solid var(--border-color);
+  box-shadow: 0 6px 0 var(--border-color);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.picker-group, .zoom-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+}
+
+/* Buttons */
+.btn {
+  background-color: #ffd166;
+  border: 3px solid var(--border-color);
+  border-radius: 15px;
+  padding: 10px 20px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--border-color);
+  color: var(--text-color);
+  transition: all 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--border-color);
+}
+
+.btn-primary { background-color: #4ecdc4; color: white; }
+.btn-danger { background-color: #ff6b6b; color: white; }
+.btn-small { padding: 5px 12px; font-size: 0.9rem; border-radius: 10px; }
+
+/* Main Section Card */
+.calendar-card {
+  width: 100%;
+  background: var(--card-bg);
+  border: 4px solid var(--border-color);
+  border-radius: 25px;
+  padding: 20px;
+  box-shadow: 0 8px 0 var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px dashed #ccc;
+  padding-bottom: 10px;
+}
+
+.section-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.question-text {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+/* Sentence & Drop Zones */
+.sentence-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 15px;
+  border: 2px solid #e0e0e0;
+}
+
+.drop-zone {
+  min-width: 120px;
+  height: 50px;
+  border: 3px dashed var(--primary-color);
+  border-radius: 12px;
+  background: var(--drop-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+.drop-zone.hovered {
+  background: #e3f2fd;
+  border-color: #2196f3;
+  transform: scale(1.03);
+}
+
+.drop-zone.filled {
+  border-style: solid;
+  border-color: #4caf50;
+  background: #e8f5e9;
+}
+
+/* Draggable Cards Pool */
+.card-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 10px;
+  background: rgba(235, 240, 245, 0.6);
+  border-radius: 15px;
+  min-height: 60px;
+}
+
+.drag-card {
+  background: #ffffff;
+  border: 3px solid var(--border-color);
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: grab;
+  box-shadow: 0 4px 0 var(--border-color);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  touch-action: none;
+}
+
+.drag-card:active {
+  cursor: grabbing;
+}
+
+.drag-card.selected-tap {
+  outline: 4px solid #ff9f43;
+  transform: translateY(-4px);
+}
+
+.drag-card.placed {
+  box-shadow: none;
+  cursor: default;
+}
+
+/* Progress Section */
+.progress-card {
+  width: 100%;
+  background: var(--card-bg);
+  border: 4px solid var(--border-color);
+  border-radius: 25px;
+  padding: 20px;
+  box-shadow: 0 8px 0 var(--border-color);
+  text-align: center;
+}
+
+.tracker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.tracker-item {
+  background: #f1f3f5;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  padding: 10px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.tracker-item.complete {
+  opacity: 1;
+  background: #d4edda;
+  border-color: #28a745;
+  color: #155724;
+}
+
+/* Celebration Overlay */
+.celebration-banner {
+  display: none;
+  background: #ffeb3b;
+  border: 4px solid black;
+  border-radius: 20px;
+  padding: 20px;
+  margin-top: 15px;
+  animation: popIn 0.5s ease-out;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Teacher Settings Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  border: 4px solid var(--border-color);
+  border-radius: 20px;
+  padding: 25px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Canvas Confetti */
+#confetti-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 999;
+}
+
+input[type="text"], select {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 2px solid #ccc;
+}
+
+/* Feedback Message Popups */
+.toast-msg {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  z-index: 2000;
+  display: none;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 600px) {
+  .sentence-container { font-size: 1.1rem; }
+  .drop-zone { min-width: 90px; height: 42px; }
+  .drag-card { font-size: 0.95rem; padding: 6px 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-decorations" id="bg-decor"></div>
+<canvas id="confetti-canvas"></canvas>
+<div id="toast" class="toast-msg"></div>
+
+<!-- MAIN HOME & GAME SCREEN -->
+<div id="game-screen" class="screen active">
+  <div class="app-container">
+    
+    <!-- Top Utility Bar -->
+    <div class="top-bar">
+      <button class="btn btn-small" onclick="resetCalendar()">🔄 Start New Day</button>
+      
+      <!-- Random Student Picker -->
+      <div class="picker-group">
+        <span>Student #:</span>
+        <input type="text" id="student-range" value="1-20" style="width:60px; text-align:center;">
+        <button class="btn btn-small btn-primary" onclick="pickRandomStudent()">PICK</button>
+        <span id="picked-student-num" style="font-size:1.3rem; color:#d9534f; margin-left:5px;">-</span>
+      </div>
+
+      <!-- Zoom Slider -->
+      <div class="zoom-group">
+        <span>🔍 Zoom:</span>
+        <input type="range" min="0.7" max="1.3" step="0.05" value="1" oninput="setGameScale(this.value)">
+      </div>
+
+      <button class="btn btn-small" onclick="openTeacherSettings()">⚙️ Settings</button>
+    </div>
+
+    <!-- Title Header -->
+    <h1 style="margin:0; text-align:center; font-size:clamp(1.8rem, 5vw, 2.5rem); text-shadow: 2px 2px 0 #fff;">
+      📅 TODAY'S CLASSROOM CALENDAR
+    </h1>
+
+    <!-- 1. DAY SECTION -->
+    <div class="calendar-card" id="sec-day">
+      <div class="section-header">
+        <span class="section-title">1️⃣ DAY</span>
+        <button class="btn btn-small" onclick="speakSentence('What day is it today? Today is ' + (state.answers.day || 'blank'))">🔊 Listen</button>
+      </div>
+      <div class="question-text">What day is it today?</div>
+      <div class="sentence-container">
+        Today is <div class="drop-zone" data-type="day" id="dz-day"></div>.
+      </div>
+      <div class="card-pool" id="pool-day"></div>
+    </div>
+
+    <!-- 2. DATE SECTION -->
+    <div class="calendar-card" id="sec-date">
+      <div class="section-header">
+        <span class="section-title">2️⃣ DATE</span>
+        <button class="btn btn-small" onclick="speakSentence('What\'s the date today? Today is ' + (state.answers.month || '') + ' ' + (state.answers.date || '') + ' ' + (state.answers.year || ''))">🔊 Listen</button>
+      </div>
+      <div class="question-text">What's the date today?</div>
+      <div class="sentence-container">
+        Today is 
+        <div class="drop-zone" data-type="month" id="dz-month"></div>
+        <div class="drop-zone" data-type="date" id="dz-date"></div>
+        <div class="drop-zone" data-type="year" id="dz-year"></div>.
+      </div>
+      
+      <div style="font-weight:bold; margin-top:5px;">Months:</div>
+      <div class="card-pool" id="pool-month"></div>
+      
+      <div style="font-weight:bold; margin-top:5px;">Ordinal Days:</div>
+      <div class="card-pool" id="pool-date"></div>
+
+      <div style="font-weight:bold; margin-top:5px;">Year:</div>
+      <div class="card-pool" id="pool-year"></div>
+    </div>
+
+    <!-- 3. SEASON SECTION -->
+    <div class="calendar-card" id="sec-season">
+      <div class="section-header">
+        <span class="section-title">3️⃣ SEASON</span>
+        <button class="btn btn-small" onclick="speakSentence('What season is it? It\'s ' + (state.answers.season || 'blank'))">🔊 Listen</button>
+      </div>
+      <div class="question-text">What season is it?</div>
+      <div class="sentence-container">
+        It's <div class="drop-zone" data-type="season" id="dz-season"></div>.
+      </div>
+      <div class="card-pool" id="pool-season"></div>
+    </div>
+
+    <!-- 4. WEATHER SECTION -->
+    <div class="calendar-card" id="sec-weather">
+      <div class="section-header">
+        <span class="section-title">4️⃣ WEATHER</span>
+        <button class="btn btn-small" onclick="speakWeatherSentence()">🔊 Listen</button>
+      </div>
+      <div style="background:#e3f2fd; padding:10px; border-radius:12px; border:2px solid #90caf9; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <span>First, let's check the actual weather in Kaohsiung!</span>
+        <a href="https://www.cwa.gov.tw/V8/E/W/County/County.html?CID=64" target="_blank" class="btn btn-primary btn-small" style="text-decoration:none;">☁️ Check Today's Weather</a>
+      </div>
+      <div class="question-text">What's the weather like?</div>
+      <div class="sentence-container">
+        It's <div class="drop-zone" data-type="weather" id="dz-weather1"></div> and <div class="drop-zone" data-type="weather" id="dz-weather2"></div>.
+      </div>
+      <div class="card-pool" id="pool-weather"></div>
+    </div>
+
+    <!-- PROGRESS TRACKER -->
+    <div class="progress-card">
+      <h2 style="margin:0;">🎉 Today's Calendar Challenge</h2>
+      <div class="tracker-grid">
+        <div class="tracker-item" id="tr-day">❌ Day</div>
+        <div class="tracker-item" id="tr-date">❌ Date</div>
+        <div class="tracker-item" id="tr-season">❌ Season</div>
+        <div class="tracker-item" id="tr-weather">❌ Weather</div>
+      </div>
+      
+      <div class="celebration-banner" id="final-celebration">
+        <h1 style="margin:0; font-size:2rem; color:#2e7d32;">🎉 GREAT JOB! 🎉</h1>
+        <p style="font-size:1.3rem; margin:5px 0 0 0;">You completed today's classroom calendar!</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TEACHER SETTINGS MODAL -->
+<div class="modal" id="settings-modal">
+  <div class="modal-content">
+    <h2 style="margin-top:0;">⚙️ Teacher Settings</h2>
+    
+    <label style="display:block; margin:15px 0;">
+      <b>Theme Background:</b><br>
+      <select id="setting-bg" onchange="changeTheme(this.value)" style="width:100%; margin-top:5px;">
+        <option value="default">Classroom Soft Blue</option>
+        <option value="sky">Colorful Sky</option>
+        <option value="arena">Fantasy Arena</option>
+        <option value="spring">Spring Blossom</option>
+        <option value="summer">Summer Sun</option>
+        <option value="fall">Autumn Leaves</option>
+        <option value="winter">Winter Snow</option>
+      </select>
+    </label>
+
+    <label style="display:flex; align-items:center; gap:10px; margin:15px 0; cursor:pointer;">
+      <input type="checkbox" id="setting-sound" checked onchange="state.soundEnabled = this.checked">
+      <b>Enable Sound Effects / Speech</b>
+    </label>
+
+    <label style="display:flex; align-items:center; gap:10px; margin:15px 0; cursor:pointer;">
+      <input type="checkbox" id="setting-confetti" checked onchange="state.confettiEnabled = this.checked">
+      <b>Enable Confetti Animations</b>
+    </label>
+
+    <hr>
+    
+    <button class="btn btn-primary" style="width:100%;" onclick="generateShareableLink()">🔗 Generate Link with Current Config</button>
+    <div id="share-link-out" style="word-break:break-all; font-size:0.8rem; margin-top:8px; display:none; background:#eee; padding:8px; border-radius:5px;"></div>
+
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+      <button class="btn btn-danger" onclick="closeTeacherSettings()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Global App State
+const state = {
+  now: new Date(),
+  answers: { day: null, month: null, date: null, year: null, season: null, weather1: null, weather2: null },
+  correctTarget: { day: '', month: '', date: '', year: '', season: '' },
+  soundEnabled: true,
+  confettiEnabled: true,
+  selectedCardEl: null // For click-to-select fallback
+};
+
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const SEASONS = ["Spring", "Summer", "Fall", "Winter"];
+const WEATHER_LIST = [
+  { text: "sunny", icon: "☀️" }, { text: "rainy", icon: "🌧️" },
+  { text: "windy", icon: "💨" }, { text: "cloudy", icon: "☁️" },
+  { text: "snowy", icon: "❄️" }, { text: "stormy", icon: "⛈️" },
+  { text: "foggy", icon: "🌫️" }, { text: "warm", icon: "🌤️" },
+  { text: "hot", icon: "🔥" }, { text: "cool", icon: "🍃" },
+  { text: "cold", icon: "🥶" }, { text: "humid", icon: "💧" }
+];
+
+// Helper: Ordinal conversion
+function getOrdinal(n) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+// Helper: Determine Northern Hemisphere Season
+function getSeason(monthIdx) {
+  if (monthIdx >= 2 && monthIdx <= 4) return "Spring";
+  if (monthIdx >= 5 && monthIdx <= 7) return "Summer";
+  if (monthIdx >= 8 && monthIdx <= 10) return "Fall";
+  return "Winter";
+}
+
+// Initial System Setup
+window.onload = () => {
+  calculateCurrentDateDefaults();
+  populateCardPools();
+  setupDropZones();
+  updateThemeDecorations('default');
+};
+
+function setGameScale(val) {
+  document.documentElement.style.setProperty('--game-scale', val);
+}
+
+function calculateCurrentDateDefaults() {
+  const dayName = DAYS[state.now.getDay()];
+  const monthName = MONTHS[state.now.getMonth()];
+  const dateOrdinal = getOrdinal(state.now.getDate());
+  const yearStr = state.now.getFullYear().toString();
+  const seasonName = getSeason(state.now.getMonth());
+
+  state.correctTarget.day = dayName;
+  state.correctTarget.month = monthName;
+  state.correctTarget.date = dateOrdinal;
+  state.correctTarget.year = yearStr;
+  state.correctTarget.season = seasonName;
+}
+
+// Populate Draggable Cards
+function populateCardPools() {
+  // Days
+  const poolDay = document.getElementById('pool-day');
+  poolDay.innerHTML = '';
+  DAYS.forEach(d => poolDay.appendChild(createCard(d, 'day')));
+
+  // Months
+  const poolMonth = document.getElementById('pool-month');
+  poolMonth.innerHTML = '';
+  MONTHS.forEach(m => poolMonth.appendChild(createCard(m, 'month')));
+
+  // Ordinal Days (1st to 31st)
+  const poolDate = document.getElementById('pool-date');
+  poolDate.innerHTML = '';
+  for (let i = 1; i <= 31; i++) {
+    poolDate.appendChild(createCard(getOrdinal(i), 'date'));
+  }
+
+  // Years
+  const poolYear = document.getElementById('pool-year');
+  poolYear.innerHTML = '';
+  const currentY = state.now.getFullYear();
+  [currentY - 1, currentY, currentY + 1].forEach(y => {
+    poolYear.appendChild(createCard(y.toString(), 'year'));
+  });
+
+  // Seasons
+  const poolSeason = document.getElementById('pool-season');
+  poolSeason.innerHTML = '';
+  SEASONS.forEach(s => poolSeason.appendChild(createCard(s, 'season')));
+
+  // Weather
+  const poolWeather = document.getElementById('pool-weather');
+  poolWeather.innerHTML = '';
+  WEATHER_LIST.forEach(w => {
+    poolWeather.appendChild(createCard(`${w.icon} ${w.text}`, 'weather', w.text));
+  });
+}
+
+function createCard(text, type, value = null) {
+  const card = document.createElement('div');
+  card.className = 'drag-card';
+  card.innerText = text;
+  card.dataset.type = type;
+  card.dataset.value = value || text;
+  card.draggable = true;
+
+  // Touch & Mouse Drag Listeners
+  card.addEventListener('dragstart', handleDragStart);
+  card.addEventListener('touchstart', handleTouchStart, { passive: false });
+  card.addEventListener('touchmove', handleTouchMove, { passive: false });
+  card.addEventListener('touchend', handleTouchEnd);
+  
+  // Click/Tap Selection Backup
+  card.addEventListener('click', () => handleCardClick(card));
+
+  return card;
+}
+
+// Drag & Drop Handlers
+let draggedCard = null;
+let touchActiveCard = null;
+
+function handleDragStart(e) {
+  draggedCard = this;
+  e.dataTransfer.setData('text/plain', '');
+}
+
+function setupDropZones() {
+  document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      zone.classList.add('hovered');
+    });
+    zone.addEventListener('dragleave', () => zone.classList.remove('hovered'));
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('hovered');
+      if (draggedCard) validateAndPlace(draggedCard, zone);
+    });
+    zone.addEventListener('click', () => handleZoneClick(zone));
+  });
+}
+
+// Touch Event Drag Emulation for Tablets/Whiteboards
+function handleTouchStart(e) {
+  touchActiveCard = this;
+  this.classList.add('selected-tap');
+}
+
+function handleTouchMove(e) {
+  if (!touchActiveCard) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  touchActiveCard.style.position = 'fixed';
+  touchActiveCard.style.zIndex = '1000';
+  touchActiveCard.style.left = (touch.clientX - 40) + 'px';
+  touchActiveCard.style.top = (touch.clientY - 20) + 'px';
+}
+
+function handleTouchEnd(e) {
+  if (!touchActiveCard) return;
+  const touch = e.changedTouches[0];
+  touchActiveCard.style.position = '';
+  touchActiveCard.style.zIndex = '';
+  touchActiveCard.style.left = '';
+  touchActiveCard.style.top = '';
+  touchActiveCard.classList.remove('selected-tap');
+
+  const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+  const zone = elementBelow ? elementBelow.closest('.drop-zone') : null;
+  if (zone) validateAndPlace(touchActiveCard, zone);
+  touchActiveCard = null;
+}
+
+// Click/Tap Alternative Selection
+function handleCardClick(card) {
+  if (card.classList.contains('placed')) return;
+
+  if (state.selectedCardEl) state.selectedCardEl.classList.remove('selected-tap');
+  
+  if (state.selectedCardEl === card) {
+    state.selectedCardEl = null;
+  } else {
+    state.selectedCardEl = card;
+    card.classList.add('selected-tap');
+    showToast("Now tap a blank space to place the card!");
+  }
+}
+
+function handleZoneClick(zone) {
+  if (state.selectedCardEl) {
+    validateAndPlace(state.selectedCardEl, zone);
+    state.selectedCardEl.classList.remove('selected-tap');
+    state.selectedCardEl = null;
+  }
+}
+
+// Validation Logic
+function validateAndPlace(cardEl, zoneEl) {
+  const cardType = cardEl.dataset.type;
+  const zoneType = zoneEl.dataset.type;
+  const cardVal = cardEl.dataset.value;
+
+  if (cardType !== zoneType) {
+    showToast("Try placing this in the matching category space!");
+    playAudioFeedback(false);
+    return;
+  }
+
+  // Any weather card is accepted in the weather slots
+  let isCorrect = false;
+  if (cardType === 'weather') {
+    isCorrect = true;
+  } else {
+    isCorrect = (cardVal === state.correctTarget[cardType]);
+  }
+
+  if (isCorrect) {
+    zoneEl.appendChild(cardEl);
+    zoneEl.classList.add('filled');
+    cardEl.classList.add('placed');
+    cardEl.draggable = false;
+    
+    if (zoneEl.id === 'dz-weather1') {
+      state.answers.weather1 = cardVal;
+    } else if (zoneEl.id === 'dz-weather2') {
+      state.answers.weather2 = cardVal;
+    } else {
+      state.answers[cardType] = cardVal;
+    }
+
+    showToast("Great job! ✨");
+    playAudioFeedback(true);
+    if (state.confettiEnabled) triggerConfetti();
+
+    checkProgress();
+  } else {
+    showToast("Try again!");
+    playAudioFeedback(false);
+  }
+}
+
+// Progress Tracker Check
+function checkProgress() {
+  const isDayDone = !!state.answers.day;
+  const isDateDone = state.answers.month && state.answers.date && state.answers.year;
+  const isSeasonDone = !!state.answers.season;
+  const isWeatherDone = !!(state.answers.weather1 && state.answers.weather2);
+
+  updateTrackerUI('tr-day', isDayDone, "Day");
+  updateTrackerUI('tr-date', isDateDone, "Date");
+  updateTrackerUI('tr-season', isSeasonDone, "Season");
+  updateTrackerUI('tr-weather', isWeatherDone, "Weather");
+
+  if (isDayDone && isDateDone && isSeasonDone && isWeatherDone) {
+    document.getElementById('final-celebration').style.display = 'block';
+    speakSentence("Great job! You completed today's classroom calendar!");
+    if (state.confettiEnabled) triggerConfetti(true);
+  }
+}
+
+function updateTrackerUI(id, isComplete, label) {
+  const el = document.getElementById(id);
+  if (isComplete) {
+    el.classList.add('complete');
+    el.innerText = `✅ ${label}`;
+  } else {
+    el.classList.remove('complete');
+    el.innerText = `❌ ${label}`;
+  }
+}
+
+// Web Speech API Integration
+function speakSentence(text) {
+  if (!state.soundEnabled || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  utterance.rate = 0.9;
+  window.speechSynthesis.speak(utterance);
+}
+
+function speakWeatherSentence() {
+  const w1 = state.answers.weather1 || 'blank';
+  const w2 = state.answers.weather2 || 'blank';
+  speakSentence(`What's the weather like? It's ${w1} and ${w2}.`);
+}
+
+// Sound FX Synthesis
+function playAudioFeedback(isSuccess) {
+  if (!state.soundEnabled) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (isSuccess) {
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3); // A5
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    } else {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+      osc.frequency.linearRampToValueAtTime(110, ctx.currentTime + 0.2); // A2
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.2);
+    }
+  } catch (e) { console.error(e); }
+}
+
+// Student Picker Utility
+function pickRandomStudent() {
+  const val = document.getElementById('student-range').value;
+  let pool = [];
+  val.split(',').forEach(p => {
+    if (p.includes('-')) {
+      const [start, end] = p.split('-').map(Number);
+      for (let i = start; i <= end; i++) if (!isNaN(i)) pool.push(i);
+    } else {
+      const num = Number(p.trim());
+      if (!isNaN(num)) pool.push(num);
+    }
+  });
+
+  if (pool.length === 0) pool = Array.from({length: 20}, (_, i) => i + 1);
+  const picked = pool[Math.floor(Math.random() * pool.length)];
+  document.getElementById('picked-student-num').innerText = `#${picked}`;
+}
+
+// Reset / Start New Day
+function resetCalendar() {
+  state.answers = { day: null, month: null, date: null, year: null, season: null, weather1: null, weather2: null };
+  document.querySelectorAll('.drop-zone').forEach(z => {
+    z.classList.remove('filled');
+    z.innerHTML = '';
+  });
+  document.getElementById('final-celebration').style.display = 'none';
+  populateCardPools();
+  checkProgress();
+  showToast("Calendar Reset!");
+}
+
+// Teacher Settings & Theme System
+function openTeacherSettings() {
+  document.getElementById('settings-modal').style.display = 'flex';
+}
+
+function closeTeacherSettings() {
+  document.getElementById('settings-modal').style.display = 'none';
+}
+
+function changeTheme(themeKey) {
+  const root = document.documentElement;
+  if (themeKey === 'default') {
+    root.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)');
+  } else if (themeKey === 'sky') {
+    root.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #feada6 100%)');
+  } else if (themeKey === 'arena') {
+    root.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)');
+  } else if (themeKey === 'spring') {
+    root.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)');
+  } else if (themeKey === 'summer') {
+    root.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)');
+  } else if (themeKey === 'fall') {
+    root.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #e65c00 0%, #F9D423 100%)');
+  } else if (themeKey === 'winter') {
+    root.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #E0EAFC 0%, #CFDEF3 100%)');
+  }
+  updateThemeDecorations(themeKey);
+}
+
+function updateThemeDecorations(themeKey) {
+  const container = document.getElementById('bg-decor');
+  container.innerHTML = '';
+  let icons = ['☁️', '⭐', '🎈'];
+  if (themeKey === 'spring') icons = ['🌸', '🌷', '🦋'];
+  if (themeKey === 'summer') icons = ['☀️', '🏖️', '🍦'];
+  if (themeKey === 'fall') icons = ['🍁', '🍂', '🌾'];
+  if (themeKey === 'winter') icons = ['❄️', '☃️', '🧊'];
+  if (themeKey === 'arena') icons = ['⚡', '🔥', '🛡️'];
+
+  for (let i = 0; i < 12; i++) {
+    const item = document.createElement('div');
+    item.className = 'floating-item';
+    item.innerText = icons[i % icons.length];
+    item.style.left = Math.random() * 90 + '%';
+    item.style.animationDelay = (Math.random() * 8) + 's';
+    item.style.animationDuration = (8 + Math.random() * 6) + 's';
+    container.appendChild(item);
+  }
+}
+
+// URL Link Generation
+function generateShareableLink() {
+  const config = { theme: document.getElementById('setting-bg').value };
+  const encoded = btoa(JSON.stringify(config));
+  const url = window.location.origin + window.location.pathname + '?w=' + encoded;
+  const out = document.getElementById('share-link-out');
+  out.innerText = url;
+  out.style.display = 'block';
+  navigator.clipboard.writeText(url);
+  showToast("Link Copied to Clipboard!");
+}
+
+// UI Toast Notification
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.innerText = msg;
+  toast.style.display = 'block';
+  setTimeout(() => { toast.style.display = 'none'; }, 2000);
+}
+
+// Lightweight Confetti System
+function triggerConfetti(big = false) {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const count = big ? 150 : 50;
+  const particles = [];
+  const colors = ['#ff4081', '#00e676', '#ffeb3b', '#00e5ff', '#ff6e40'];
+
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      vx: (Math.random() - 0.5) * (big ? 18 : 10),
+      vy: (Math.random() - 0.5) * (big ? 18 : 10) - 5,
+      size: Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      life: 100
+    });
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let active = false;
+    particles.forEach(p => {
+      if (p.life > 0) {
+        active = true;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.2; // Gravity
+        p.life--;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+      }
+    });
+    if (active) requestAnimationFrame(render);
+  }
+  render();
+}
+</script>
+</body>
+</html>
