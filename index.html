@@ -401,7 +401,7 @@ input[type="text"], select {
 
     <!-- Title Header -->
     <h1 style="margin:0; text-align:center; font-size:clamp(1.8rem, 5vw, 2.5rem); text-shadow: 2px 2px 0 #fff;">
-      📅 TODAY'S CALENDAR AND WEATHER
+      📅 TODAY'S CALENDAR AND WEATHER UPDATE
     </h1>
 
     <!-- 1. DAY SECTION -->
@@ -503,7 +503,7 @@ input[type="text"], select {
         <option value="arena">Fantasy Arena</option>
         <option value="spring">Spring Blossom</option>
         <option value="summer">Summer Sun</option>
-        <option value="fall">Autumn Leaves</option>
+        <option value="autumn">Autumn Leaves</option>
         <option value="winter">Winter Snow</option>
       </select>
     </label>
@@ -542,7 +542,7 @@ const state = {
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const SEASONS = ["Spring", "Summer", "Fall", "Winter"];
+const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
 const WEATHER_LIST = [
   { text: "sunny", icon: "☀️" }, { text: "rainy", icon: "🌧️" },
   { text: "windy", icon: "💨" }, { text: "cloudy", icon: "☁️" },
@@ -563,7 +563,7 @@ function getOrdinal(n) {
 function getSeason(monthIdx) {
   if (monthIdx >= 2 && monthIdx <= 4) return "Spring";
   if (monthIdx >= 5 && monthIdx <= 7) return "Summer";
-  if (monthIdx >= 8 && monthIdx <= 10) return "Fall";
+  if (monthIdx >= 8 && monthIdx <= 10) return "Autumn";
   return "Winter";
 }
 
@@ -905,7 +905,7 @@ function changeTheme(themeKey) {
     root.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)');
   } else if (themeKey === 'summer') {
     root.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)');
-  } else if (themeKey === 'fall') {
+  } else if (themeKey === 'autumn') {
     root.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #e65c00 0%, #F9D423 100%)');
   } else if (themeKey === 'winter') {
     root.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #E0EAFC 0%, #CFDEF3 100%)');
@@ -919,7 +919,7 @@ function updateThemeDecorations(themeKey) {
   let icons = ['☁️', '⭐', '🎈'];
   if (themeKey === 'spring') icons = ['🌸', '🌷', '🦋'];
   if (themeKey === 'summer') icons = ['☀️', '🏖️', '🍦'];
-  if (themeKey === 'fall') icons = ['🍁', '🍂', '🌾'];
+  if (themeKey === 'autumn') icons = ['🍁', '🍂', '🌾'];
   if (themeKey === 'winter') icons = ['❄️', '☃️', '🧊'];
   if (themeKey === 'arena') icons = ['⚡', '🔥', '🛡️'];
 
